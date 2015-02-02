@@ -1,0 +1,6 @@
+/**************************
+ * Building dmtcp
+ **************************/
+1) from the Lollipop-x86 directory run:  source ./build/envsetup.sh
+2) to build parts of dmtcp, add an Android.mk in there. Look at dmtcp/src/plugin/alloc/ for an example
+3) to test your module, run: TARGET_PRODUCT=android_x86 mm in the directory where your Android.mk has been put.

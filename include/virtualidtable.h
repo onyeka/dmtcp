@@ -65,6 +65,7 @@ namespace dmtcp
           _max = max;
           resetNextVirtualId();
         }
+        virtual ~VirtualIdTable();
 
         void resetNextVirtualId() {
           _nextVirtualId = (IdType) ((unsigned long)_base + 1);
