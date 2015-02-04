@@ -50,7 +50,7 @@
 #include <sys/mman.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <mqueue.h>
+#include <linux/mqueue.h>
 #ifdef HAVE_SYS_INOTIFY_H
 # include <sys/inotify.h>
 #endif
@@ -281,12 +281,14 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
     numLibcWrappers
   } LibcWrapperOffset;
 
+#ifndef DMTCP_ANDROID
   union semun {
     int              val;    /* Value for SETVAL */
     struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
     unsigned short  *array;  /* Array for GETALL, SETALL */
     struct seminfo  *__buf;  /* Buffer for IPC_INFO (Linux-specific) */
   };
+#endif
 
   void _dmtcp_lock();
   void _dmtcp_unlock();
@@ -420,11 +422,16 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   void *_real_libc_memalign(size_t boundary, size_t size);
   void *_real_mmap(void *addr, size_t length, int prot, int flags,
       int fd, off_t offset);
+#ifndef DMTCP_ANDROID
   void *_real_mmap64(void *addr, size_t length, int prot, int flags,
       int fd, __off64_t offset);
 #if __GLIBC_PREREQ (2,4)
   void *_real_mremap(void *old_address, size_t old_size, size_t new_size,
       int flags, ... /* void *new_address */);
+#else
+  void *_real_mremap(void *old_address, size_t old_size, size_t new_size,
+      int flags);
+#endif
 #else
   void *_real_mremap(void *old_address, size_t old_size, size_t new_size,
       int flags);
@@ -472,6 +479,11 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   int _real_inotify_rm_watch(int fd, int wd);
 
   int   _real_waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+#ifdef DMTCP_ANDROID
+# define __WAIT_STATUS int*
+#endif
+
+#ifndef DMTCP_ANDROID
   pid_t _real_wait4(pid_t pid, __WAIT_STATUS status, int options,
                     struct rusage *rusage);
 
@@ -502,6 +514,7 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   int _real_mq_timedsend(mqd_t mqdes, const char *msg_ptr, size_t msg_len,
                          unsigned int msg_prio,
                          const struct timespec *abs_timeout);
+#endif
 
 #ifdef __cplusplus
 }

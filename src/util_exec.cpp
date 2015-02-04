@@ -122,7 +122,15 @@ int dmtcp::Util::expandPathname(const char *inpath, char * const outpath,
     }
     while (*pathVar != '\0') {
       char *nextPtr;
+#ifndef DMTCP_ANDROID
       nextPtr = strchrnul(pathVar, ':');
+#else
+      nextPtr = strchr(pathVar, ':');
+      if (nextPtr == NULL) {
+        nextPtr = pathVar;
+        while (*nextPtr++);
+      }
+#endif
       if (nextPtr == pathVar) {
         /* Two adjacent colons, or a colon at the beginning or the end
            of `PATH' means to search the current directory.  */

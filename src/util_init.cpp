@@ -21,7 +21,13 @@
 
 #include <string.h>
 #include <pwd.h>
+
+#ifdef DMTCP_ANDROID
+#include <fcntl.h>
+#else
 #include <sys/fcntl.h>
+#endif
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "constants.h"
