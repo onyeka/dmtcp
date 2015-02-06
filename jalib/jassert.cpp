@@ -27,7 +27,9 @@
 #include <dlfcn.h>
 
 #include <fstream>
+#ifndef DMTCP_ANDROID
 #include <execinfo.h>  /* For backtrace() */
+#endif
 
 #include "jalib.h"
 #include "jconvert.h"
@@ -56,8 +58,11 @@ jassert_internal::JAssert& jassert_internal::JAssert::Text ( const char* msg )
   Print ( "\n" );
   return *this;
 }
-
+#ifndef DMTCP_ANDROID
 static pthread_mutex_t logLock = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP;
+#else
+static pthread_mutex_t logLock = PTHREAD_ERRORCHECK_MUTEX_INITIALIZER;
+#endif
 
 bool jassert_internal::lockLog()
 {
@@ -210,6 +215,7 @@ static const jalib::string writeJbacktraceMsg() {
   return o.str();
 }
 
+#ifndef DMTCP_ANDROID
 static void writeBacktrace() {
   void *buffer[BT_SIZE];
   int nptrs = backtrace(buffer, BT_SIZE);
@@ -223,6 +229,7 @@ static void writeBacktrace() {
     jalib::close(fd);
   }
 }
+#endif
 
 // This routine is called when JASSERT triggers.  Something failed.
 // DOES (for further diagnosis):  cp /proc/self/maps $DMTCP_TMPDIR/proc-maps
@@ -247,7 +254,9 @@ static void writeProcMaps() {
 
 jassert_internal::JAssert& jassert_internal::JAssert::jbacktrace ()
 {
+#ifndef DMTCP_ANDROID
   writeBacktrace();
+#endif
   writeProcMaps();
   // This prints to stdout and to jalib::logFd
   Print( writeJbacktraceMsg() );
