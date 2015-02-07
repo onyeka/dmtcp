@@ -25,7 +25,9 @@
 #include <sys/resource.h>
 #include <sys/personality.h>
 #include <linux/version.h>
+#ifndef __ANDROID__
 #include <gnu/libc-version.h>
+#endif
 #include "mtcp_sys.h"
 #include "restore_libc.h"
 #include "tlsutil.h"
@@ -75,7 +77,7 @@ extern MYINFO_GS_T myinfo_gs;
  *       size of __padding in struct pthread. We need to add an extra 512 bytes
  *       to accommodate this.                                    -- KAPIL
  */
-
+#ifndef __ANDROID__
 #if !__GLIBC_PREREQ (2,1)
 # error "glibc version too old"
 #endif
@@ -114,6 +116,7 @@ static int STATIC_TLS_TID_OFFSET()
 
   return offset;
 }
+#endif /* __ANDROID__ */
 
 #if 0
 # if __GLIBC_PREREQ (2,11)
@@ -131,7 +134,12 @@ static int STATIC_TLS_TID_OFFSET()
 # endif
 #endif
 
+#ifndef __ANDROID__
+//TODO: revisit this since Bionic is newer now
+/* For Android, we are currently only working with one version of Bionic,
+ * whose PidOffset we calculate manually */
 # define STATIC_TLS_PID_OFFSET() (STATIC_TLS_TID_OFFSET() + sizeof(pid_t))
+#endif
 
 /* WHEN WE HAVE CONFIDENCE IN THIS VERSION, REMOVE ALL OTHER __GLIBC_PREREQ
  * AND MAKE THIS THE ONLY VERSION.  IT SHOULD BE BACKWARDS COMPATIBLE.
@@ -155,6 +163,10 @@ extern ThreadTLSInfo *motherofall_tlsInfo;
 /*****************************************************************************
  *
  *****************************************************************************/
+#ifdef __ANDROID__
+  /* The thread descriptor struct has no field for tid in Bionic/Android,
+   * so we don't define it */
+#else
 int TLSInfo_GetTidOffset(void)
 
 {
@@ -215,6 +227,7 @@ int TLSInfo_GetTidOffset(void)
   }
   return tid_offset;
 }
+#endif /* __ANDROID__ */
 
 /*****************************************************************************
  *
@@ -222,12 +235,22 @@ int TLSInfo_GetTidOffset(void)
 int TLSInfo_GetPidOffset(void)
 {
   static int pid_offset = -1;
+#ifndef DMTCP_ANDROID
+//TODO: FIX ME! this isn't correct!
   struct {pid_t tid; pid_t pid;} tid_pid;
   if (pid_offset == -1) {
     int tid_offset = TLSInfo_GetTidOffset();
     pid_offset = tid_offset + (char *)&(tid_pid.pid) - (char *)&tid_pid;
     DPRINTF("pid_offset: %d\n", pid_offset);
   }
+#else
+  if (pid_offset == -1) {
+    void* pthread_desc = get_tls_base_addr();
+    pid_offset = (void*)&(((pthread_internal_t*)pthread_desc)->tid) - pthread_desc;
+
+    ASSERT (((pthread_internal_t*)pthread_desc)->kernel_id == mtcp_sys_getpid());
+  }
+#endif
   return pid_offset;
 }
 
