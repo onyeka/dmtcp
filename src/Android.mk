@@ -37,6 +37,29 @@ include external/stlport/libstlport.mk
 include $(BUILD_STATIC_LIBRARY)
 
 #
+# Build libsyscallsreal.a
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := \
+	-DDMTCP_ANDROID -DHAVE_CONFIG_H
+
+LOCAL_C_INCLUDES:= \
+	$(LOCAL_PATH) \
+	$(dmtcpincludedir)
+
+LOCAL_SRC_FILES := syscallsreal.c trampolines.cpp
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := libsyscallsreal
+
+include external/stlport/libstlport.mk
+
+include $(BUILD_STATIC_LIBRARY)
+
+
+#
 # Build libdmtcp.so
 #
 

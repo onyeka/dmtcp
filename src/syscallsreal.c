@@ -50,7 +50,12 @@ typedef int (*funcptr_t) ();
 typedef pid_t (*funcptr_pid_t) ();
 typedef funcptr_t (*signal_funcptr_t) ();
 
+#ifndef __ANDROID__
+// Disabled for Bionic build
 static pthread_mutex_t theMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#else
+static pthread_mutex_t theMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+#endif /* __ANDROID__ */
 
 LIB_PRIVATE pid_t gettid() {
   return syscall(SYS_gettid);
@@ -61,6 +66,7 @@ LIB_PRIVATE int tkill(int tid, int sig) {
 LIB_PRIVATE int tgkill(int tgid, int tid, int sig) {
   return syscall(SYS_tgkill, tgid, tid, sig);
 }
+#endif /* __ANDROID__ */
 
 // FIXME: Are these primitives (_dmtcp_lock, _dmtcp_unlock) required anymore?
 void _dmtcp_lock() { _real_pthread_mutex_lock (&theMutex); }
@@ -687,10 +693,13 @@ LIB_PRIVATE
 int _real_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
   REAL_FUNC_PASSTHROUGH (sigaction) (signum, act, oldact);
 }
+#ifndef __ANDROID__
+// not supported by Bionic
 LIB_PRIVATE
 int _real_sigvec(int signum, const struct sigvec *vec, struct sigvec *ovec) {
   REAL_FUNC_PASSTHROUGH (sigvec) (signum, vec, ovec);
 }
+#endif /* __ANDROID__ */
 
 //set the mask
 LIB_PRIVATE
@@ -966,6 +975,7 @@ int _real_shmdt (const void *shmaddr) {
 # define IPC64_FLAG 0
 #endif
 
+#ifndef __ANDROID__
 LIB_PRIVATE
 int _real_shmctl (int shmid, int cmd, struct shmid_ds *buf) {
   REAL_FUNC_PASSTHROUGH (shmctl) (shmid, cmd | IPC64_FLAG, buf);
@@ -1051,6 +1061,7 @@ int _real_mq_timedsend(mqd_t mqdes, const char *msg_ptr, size_t msg_len,
   REAL_FUNC_PASSTHROUGH (mq_timedsend) (mqdes, msg_ptr, msg_len, msg_prio,
                                         abs_timeout);
 }
+#endif /* __ANDROID__ */
 
 LIB_PRIVATE
 void *_real_mmap(void *addr, size_t length, int prot, int flags,
@@ -1058,12 +1069,17 @@ void *_real_mmap(void *addr, size_t length, int prot, int flags,
   REAL_FUNC_PASSTHROUGH_TYPED (void*, mmap) (addr,length,prot,flags,fd,offset);
 }
 
+#ifndef __ANDROID__
 LIB_PRIVATE
 void *_real_mmap64(void *addr, size_t length, int prot, int flags,
     int fd, __off64_t offset) {
   REAL_FUNC_PASSTHROUGH_TYPED (void*,mmap64) (addr,length,prot,flags,fd,offset);
 }
+#endif /* __ANDROID__ */
 
+#ifdef __ANDROID__
+#define __GLIBC_PREREQ(x,y) 0
+#endif
 #if __GLIBC_PREREQ (2,4)
 LIB_PRIVATE
 void *_real_mremap(void *old_address, size_t old_size, size_t new_size,
