@@ -19,6 +19,10 @@
 # define SETJMP /* setcontext/getcontext not defined for ARM glibc */
 #endif
 
+#ifdef __ANDROID__
+# define SETJMP // bionic Lollipop has setjmp
+#endif
+
 #ifdef SETJMP
 # include <setjmp.h>
 #else

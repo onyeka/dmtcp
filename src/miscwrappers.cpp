@@ -29,6 +29,11 @@
 #include "processinfo.h"
 #include <sys/syscall.h>
 
+#ifdef __ANDROID__
+# define __GLIBC_PREREQ(x,y) 0
+# define SYS_sigtimedwait __NR_rt_sigtimedwait
+#endif
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,13) && __GLIBC_PREREQ(2,4)
 #include <sys/inotify.h>
 #endif
@@ -312,7 +317,11 @@ extern "C" SYSCALL_ARG_RET_TYPE syscall(SYSCALL_ARG_RET_TYPE sys_num, ... )
     {
       SYSCALL_GET_ARGS_3(const sigset_t*,set,siginfo_t*,info,
                         const struct timespec*, timeout);
+#ifndef __ANDROID__
       ret = sigtimedwait(set, info, timeout);
+#else
+      ret = syscall(SYS_sigtimedwait, set, info, timeout, sizeof(*set));
+#endif
       break;
     }
 

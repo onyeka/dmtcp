@@ -81,6 +81,7 @@ extern MYINFO_GS_T myinfo_gs;
 #if !__GLIBC_PREREQ (2,1)
 # error "glibc version too old"
 #endif
+#endif /* __ANDROID__ */
 
 // NOTE: tls_tid_offset, tls_pid_offset determine offset independently of
 //     glibc version.  These STATIC_... versions serve as a double check.
@@ -98,8 +99,16 @@ static int STATIC_TLS_TID_OFFSET()
     return offset;
 
   char *ptr;
-  long major = strtol(gnu_get_libc_version(), &ptr, 10);
-  long minor = strtol(ptr+1, NULL, 10);
+  long major = 0;
+  long minor = 0;
+#ifdef __ANDROID__
+//TODO: this is a hack, proper fixing needs to be done later
+  major = 2;
+  minor = 11;
+#else
+  major = strtol(gnu_get_libc_version(), &ptr, 10);
+  minor = strtol(ptr+1, NULL, 10);
+#endif
   ASSERT (major == 2);
 
   if (minor >= 11) {
@@ -116,7 +125,6 @@ static int STATIC_TLS_TID_OFFSET()
 
   return offset;
 }
-#endif /* __ANDROID__ */
 
 #if 0
 # if __GLIBC_PREREQ (2,11)
@@ -134,12 +142,10 @@ static int STATIC_TLS_TID_OFFSET()
 # endif
 #endif
 
-#ifndef __ANDROID__
 //TODO: revisit this since Bionic is newer now
 /* For Android, we are currently only working with one version of Bionic,
  * whose PidOffset we calculate manually */
 # define STATIC_TLS_PID_OFFSET() (STATIC_TLS_TID_OFFSET() + sizeof(pid_t))
-#endif
 
 /* WHEN WE HAVE CONFIDENCE IN THIS VERSION, REMOVE ALL OTHER __GLIBC_PREREQ
  * AND MAKE THIS THE ONLY VERSION.  IT SHOULD BE BACKWARDS COMPATIBLE.
@@ -163,10 +169,6 @@ extern ThreadTLSInfo *motherofall_tlsInfo;
 /*****************************************************************************
  *
  *****************************************************************************/
-#ifdef __ANDROID__
-  /* The thread descriptor struct has no field for tid in Bionic/Android,
-   * so we don't define it */
-#else
 int TLSInfo_GetTidOffset(void)
 
 {
@@ -227,7 +229,6 @@ int TLSInfo_GetTidOffset(void)
   }
   return tid_offset;
 }
-#endif /* __ANDROID__ */
 
 /*****************************************************************************
  *
@@ -235,22 +236,12 @@ int TLSInfo_GetTidOffset(void)
 int TLSInfo_GetPidOffset(void)
 {
   static int pid_offset = -1;
-#ifndef DMTCP_ANDROID
-//TODO: FIX ME! this isn't correct!
   struct {pid_t tid; pid_t pid;} tid_pid;
   if (pid_offset == -1) {
     int tid_offset = TLSInfo_GetTidOffset();
     pid_offset = tid_offset + (char *)&(tid_pid.pid) - (char *)&tid_pid;
     DPRINTF("pid_offset: %d\n", pid_offset);
   }
-#else
-  if (pid_offset == -1) {
-    void* pthread_desc = get_tls_base_addr();
-    pid_offset = (void*)&(((pthread_internal_t*)pthread_desc)->tid) - pthread_desc;
-
-    ASSERT (((pthread_internal_t*)pthread_desc)->kernel_id == mtcp_sys_getpid());
-  }
-#endif
   return pid_offset;
 }
 

@@ -124,6 +124,11 @@
 #define ENV_VAR_DLSYM_OFFSET "DMTCP_DLSYM_OFFSET"
 #define ENV_VAR_DLSYM_OFFSET_M32 "DMTCP_DLSYM_OFFSET_M32"
 
+// definitions for bionic libc used by dmtcp
+#define BIONIC_LIBC_BASE_FUNC clearerr
+#define BIONIC_LIBC_BASE_FUNC_STR "clearerr"
+#define BIONIC_LIBC "/system/bin/libc.so"
+
 //this list should be kept up to date with all "protected" environment vars
 #define ENV_VARS_ALL \
     ENV_VAR_NAME_HOST,\

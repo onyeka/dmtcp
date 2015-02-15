@@ -56,15 +56,24 @@
  * should be extended to other calls as well.           -- KAPIL
  */
 // NOTE: PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP is not POSIX.
+#ifndef __ANDROID__
 static pthread_rwlock_t
   _wrapperExecutionLock = PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP;
 static pthread_rwlock_t
   _threadCreationLock = PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP;
+#else
+static pthread_rwlock_t _wrapperExecutionLock = PTHREAD_RWLOCK_INITIALIZER;
+static pthread_rwlock_t _threadCreationLock = PTHREAD_RWLOCK_INITIALIZER;
+#endif /* __ANDROID___ */
 static bool _wrapperExecutionLockAcquiredByCkptThread = false;
 static bool _threadCreationLockAcquiredByCkptThread = false;
 
 static pthread_mutex_t destroyDmtcpWorkerLock = PTHREAD_MUTEX_INITIALIZER;
+#ifndef __ANDROID__
 static pthread_mutex_t theCkptCanStart = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#else
+static pthread_mutex_t theCkptCanStart = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+#endif
 
 static pthread_mutex_t libdlLock = PTHREAD_MUTEX_INITIALIZER;
 static pid_t libdlLockOwner = 0;
@@ -177,7 +186,11 @@ void dmtcp::ThreadSync::releaseLocks()
 
 void dmtcp::ThreadSync::resetLocks()
 {
+#ifndef __ANDROID__
   pthread_rwlock_t newLock = PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP;
+#else
+  pthread_rwlock_t newLock = PTHREAD_RWLOCK_INITIALIZER;
+#endif
   _wrapperExecutionLock = newLock;
   _threadCreationLock = newLock;
 

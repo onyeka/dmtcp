@@ -31,7 +31,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifndef DMTCP_ANDROID
+#ifndef __ANDROID__
     #include <execinfo.h> /* For backtrace() */
     #define BT_SIZE 50 /* Maximum size backtrace of stack */
 #endif

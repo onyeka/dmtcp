@@ -88,7 +88,11 @@ out:
     (void) sigprocmask (SIG_SETMASK, &omask, (sigset_t *) NULL);
 
     /* Exec the shell.  */
+#ifdef __ANDROID__
+    (void) execve (SHELL_PATH, (char *const *) new_argv, environ);
+#else
     (void) execve (SHELL_PATH, (char *const *) new_argv, __environ);
+#endif
     _exit (127);
   } else if (pid < (pid_t) 0) {
     /* The fork failed.  */

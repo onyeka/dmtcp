@@ -32,6 +32,12 @@
 #define EXTERNC extern "C"
 #endif
 
+#ifdef __ANDROID__
+/* sigmask is not defined in bionic; copying the definition from GNU */
+# define sigmask(sig) \
+    (((unsigned long int) 1) << (((sig) - 1) % (8 * sizeof (unsigned long int))))
+#endif
+
 //gah!!! signals API is redundant
 
 static bool checkpointSignalBlockedForProcess = false;
@@ -155,6 +161,8 @@ EXTERNC int rt_sigaction(int signum, const struct sigaction *act,
   //}
   //return _real_rt_sigaction( signum, act, oldact);
 }
+
+#ifndef __ANDROID__
 EXTERNC int sigvec(int signum, const struct sigvec *vec, struct sigvec *ovec)
 {
   if(signum == bannedSignalNumber()) {
@@ -162,6 +170,7 @@ EXTERNC int sigvec(int signum, const struct sigvec *vec, struct sigvec *ovec)
   }
   return _real_sigvec( signum, vec, ovec );
 }
+#endif
 
 //set the mask
 EXTERNC int sigblock(int mask)

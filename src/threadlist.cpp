@@ -30,6 +30,10 @@
 # define SETJMP /* setcontext/getcontext not defined for ARM glibc */
 #endif
 
+#ifdef __ANDROID__
+# define SETJMP // bionic Lollipop has setjmp
+#endif
+
 #ifdef SETJMP
 # include <setjmp.h>
 #else
@@ -603,6 +607,19 @@ void ThreadList::waitForAllRestored(Thread *thread)
 /*****************************************************************************
  *
  *****************************************************************************/
+#ifdef __ANDROID__
+/* Adapted from GNU libc */
+# define __sigandset(dest, left, right) \
+  ((*(dest) = (*(left) & *(right))), 0)
+static int sigandset(sigset_t *dest, sigset_t *left, sigset_t *right)
+{
+  if (dest == NULL || left == NULL || right == NULL) {
+    return -1;
+  }
+    return __sigandset (dest, left, right);
+  }
+#endif
+
 void ThreadList::postRestart(void)
 {
   Thread *thread;

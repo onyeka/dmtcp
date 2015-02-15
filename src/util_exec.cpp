@@ -410,7 +410,11 @@ static int32_t getDlsymOffset()
    * symbol defined in binary's PLT. Thus, to compute the correct offset, we
    * use dlopen/dlsym.
    */
+#ifdef __ANDROID__
+  base_addr = dlsym(handle, BIONIC_LIBC_BASE_FUNC_STR);
+#else
   base_addr = dlsym(handle, LIBDL_BASE_FUNC_STR);
+#endif
   dlsym_addr = dlsym(handle, "dlsym");
   dlclose(handle);
   diff = (char *)dlsym_addr - (char *)base_addr;

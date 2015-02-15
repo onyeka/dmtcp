@@ -28,14 +28,45 @@
 // Uncomment this to see what symbols and versions are chosen.
 #define VERBOSE
 
+#ifndef __ANDROID__
 #define _GNU_SOURCE
+#else
+/* this definition was pulled from gingerbread bionic/libc/include/sys/exec_elf.h
+   since it doesn't exist in lollipop bionic/libc
+*/
+#define STN_UNDEF 0
+#endif
+
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 
-#define _GNU_SOURCE
 #include <dlfcn.h>
+
+#ifdef __ANDROID__
+typedef struct
+{
+  Elf32_Half    vd_version;             /* Version revision */
+  Elf32_Half    vd_flags;               /* Version information */
+  Elf32_Half    vd_ndx;                 /* Version Index */
+  Elf32_Half    vd_cnt;                 /* Number of associated aux entries */
+  Elf32_Word    vd_hash;                /* Version name hash value */
+  Elf32_Word    vd_aux;                 /* Offset in bytes to verdaux array */
+  Elf32_Word    vd_next;                /* Offset in bytes to next verdef
+                                           entry */
+} Elf32_Verdef;
+typedef struct
+{
+  Elf32_Word    vda_name;               /* Version or dependency names */
+  Elf32_Word    vda_next;               /* Offset in bytes to next verdaux
+                                           entry */
+} Elf32_Verdaux;
+# define DT_VERSYM       0x6ffffff0
+# define DT_VERDEF       0x6ffffffc      /* Address of version definition
+                                           table */
+# define DT_VERDEFNUM    0x6ffffffd      /* Number of version definitions */
+#endif
 
 static unsigned long elf_hash(const unsigned char *name) {
   unsigned long h = 0, g;
@@ -112,6 +143,10 @@ static char *version_name(ElfW(Word) version_ndx, dt_tag *tags) {
 // Also, the _DYNAMIC symbol in a section should also be a pointer to
 //   the address of the dynamic section.  (See comment in /usr/include/link.h)
 static void get_dt_tags(void *handle, dt_tag *tags) {
+#ifdef __ANDROID__
+    printf("ERROR: not supported for Android\n");
+    return;
+#else
     struct link_map *link_map;  // from /usr/include/link.h
     if (dlinfo(handle, RTLD_DI_LINKMAP, &link_map) == -1)
       printf("ERROR: %s\n", dlerror());
@@ -149,6 +184,7 @@ printf("dyn: %p; _DYNAMIC: %p\n", dyn, _DYNAMIC);
       //if (cur_dyn->d_tag == DT_MIPS_UNREFEXTNO)  // First external DYNSYM
       //  first_ext_def = (ElfW(Word))cur_dyn->d_un.d_val;  // first dynsym entry??
     }
+#endif /* __ANDROID__ */
 }
 
 void *dlsym_default_internal(void *handle, const char*symbol) {

@@ -86,9 +86,16 @@ extern "C"
 # define DISABLE_PTHREAD_GETSPECIFIC_TRICK
 #endif
 
+/* NOTE: removed the LIB_PRIVATE from gettid(), not sure if this is ok but
+it fixed linking issue with hidden gettid symbol */
+#ifdef __ANDROID__
+pid_t gettid();
+#else
 LIB_PRIVATE pid_t gettid();
 LIB_PRIVATE int tkill(int tid, int sig);
 LIB_PRIVATE int tgkill(int tgid, int tid, int sig);
+#endif
+
 
 
 extern int dmtcp_wrappers_initializing;
@@ -130,6 +137,8 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   MACRO(waitid)                             \
   MACRO(wait3)                              \
   MACRO(wait4)                              \
+/* Bionic uses __wait4 instead of wait4 */  \
+  MACRO(__wait4)                            \
   MACRO(ioctl)                              \
   MACRO(fcntl)                              \
                                             \
@@ -281,14 +290,14 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
     numLibcWrappers
   } LibcWrapperOffset;
 
-#ifndef DMTCP_ANDROID
+#ifndef __ANDROID__
   union semun {
     int              val;    /* Value for SETVAL */
     struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
     unsigned short  *array;  /* Array for GETALL, SETALL */
     struct seminfo  *__buf;  /* Buffer for IPC_INFO (Linux-specific) */
   };
-#endif
+#endif /* __ANDROID__ */
 
   void _dmtcp_lock();
   void _dmtcp_unlock();
@@ -391,7 +400,6 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   int _real_sigwaitinfo(const sigset_t *set, siginfo_t *info);
   int _real_sigtimedwait(const sigset_t *set, siginfo_t *info,
                          const struct timespec *timeout);
-
   pid_t _real_gettid(void);
   int   _real_tkill(int tid, int sig);
   int   _real_tgkill(int tgid, int tid, int sig);
@@ -422,7 +430,7 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   void *_real_libc_memalign(size_t boundary, size_t size);
   void *_real_mmap(void *addr, size_t length, int prot, int flags,
       int fd, off_t offset);
-#ifndef DMTCP_ANDROID
+#ifndef __ANDROID__
   void *_real_mmap64(void *addr, size_t length, int prot, int flags,
       int fd, __off64_t offset);
 #if __GLIBC_PREREQ (2,4)
@@ -479,14 +487,13 @@ LIB_PRIVATE extern __thread int thread_performing_dlopen_dlsym;
   int _real_inotify_rm_watch(int fd, int wd);
 
   int   _real_waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
-#ifdef DMTCP_ANDROID
+#ifdef __ANDROID__
 # define __WAIT_STATUS int*
 #endif
 
-#ifndef DMTCP_ANDROID
   pid_t _real_wait4(pid_t pid, __WAIT_STATUS status, int options,
                     struct rusage *rusage);
-
+#ifndef __ANDROID__
   int _real_shmget (int key, size_t size, int shmflg);
   void* _real_shmat (int shmid, const void *shmaddr, int shmflg);
   int _real_shmdt (const void *shmaddr);

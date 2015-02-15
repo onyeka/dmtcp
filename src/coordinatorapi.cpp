@@ -600,7 +600,7 @@ void dmtcp::CoordinatorAPI::connectToCoordOnStartup(CoordinatorMode  mode,
   coordInfo->addrLen = sizeof (coordInfo->addr);
   JASSERT(getpeername(_coordinatorSocket.sockfd(),
                       (struct sockaddr*) &coordInfo->addr,
-                      &coordInfo->addrLen) == 0)
+                      (socklen_t *)&coordInfo->addrLen) == 0)
     (JASSERT_ERRNO);
   memcpy(localIP, &hello_remote.ipAddr, sizeof hello_remote.ipAddr);
 }
@@ -653,7 +653,7 @@ void dmtcp::CoordinatorAPI::connectToCoordOnRestart(CoordinatorMode  mode,
     coordInfo->addrLen = sizeof (coordInfo->addr);
     JASSERT(getpeername(_coordinatorSocket.sockfd(),
                         (struct sockaddr*) &coordInfo->addr,
-                        &coordInfo->addrLen) == 0)
+                        (socklen_t *)&coordInfo->addrLen) == 0)
       (JASSERT_ERRNO);
   }
   if (localIP != NULL) {

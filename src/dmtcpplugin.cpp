@@ -469,9 +469,13 @@ EXTERNC void *dmtcp_get_libc_dlsym_addr(void)
     }
 
     dmtcp_dlsym_offset = (int32_t) strtol(getenv(evar), NULL, 10);
-
+#ifdef __ANDROID__
+    _libc_dlsym_fnptr = (dlsym_fnptr_t)((char *)&BIONIC_LIBC_BASE_FUNC +
+                                        dmtcp_dlsym_offset);
+#else
     _libc_dlsym_fnptr = (dlsym_fnptr_t)((char *)&LIBDL_BASE_FUNC +
                                         dmtcp_dlsym_offset);
+#endif
   }
 
   return (void*) _libc_dlsym_fnptr;
