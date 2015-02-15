@@ -57,6 +57,7 @@ static pthread_mutex_t theMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t theMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 #endif /* __ANDROID__ */
 
+#ifndef __ANDROID__
 LIB_PRIVATE pid_t gettid() {
   return syscall(SYS_gettid);
 }
@@ -274,12 +275,20 @@ void initialize_libc_wrappers()
      * with GLIBC_2.1 version. On 64-bit machines, there is only one
      * pthread_create symbol (GLIBC_2.2.5), so no worries there.
      */
+#ifdef __ANDROID__
+    _real_func_addr[ENUM(pthread_create)] = dlsym(RTLD_NEXT, "pthread_create");
+#else
     _real_func_addr[ENUM(pthread_create)] = dlvsym(RTLD_NEXT, "pthread_create",
                                                    "GLIBC_2.1");
 #endif
+#endif
 
     /* On some arm machines, the newest pthread_create has version GLIBC_2.4 */
+#ifdef __ANDROID__
+    void *addr = dlsym(RTLD_NEXT, "pthread_create");
+#else
     void *addr = dlvsym(RTLD_NEXT, "pthread_create", "GLIBC_2.4");
+#endif
     if (addr != NULL) {
       _real_func_addr[ENUM(pthread_create)] = addr;
     }
@@ -288,8 +297,14 @@ void initialize_libc_wrappers()
   }
 }
 
+#ifdef __ANDROID__
+# define GET_LIBPTHREAD_FUNC_ADDR(name) \
+  _real_func_addr[ENUM(name)] = dlsym(RTLD_NEXT, #name);
+#else
 # define GET_LIBPTHREAD_FUNC_ADDR(name) \
   _real_func_addr[ENUM(name)] = dlvsym(RTLD_NEXT, #name, pthread_sym_ver);
+#endif /* __ANDROID__ */
+
 /*
  * WARNING: By using this method to initialize libpthread wrappers (direct
  * dlopen()/dlsym()) we are are overriding any user wrappers for these
@@ -306,7 +321,11 @@ void initialize_libpthread_wrappers()
     const char *ver_2_3_2 = "GLIBC_2.3.2";
     const char *pthread_sym_ver = NULL;
 
+#ifdef __ANDROID__
+    void *addr = dlsym(RTLD_NEXT, "pthread_cond_signal");
+#else
     void *addr = dlvsym(RTLD_NEXT, "pthread_cond_signal", ver_2_4);
+#endif
     if (addr != NULL) {
       pthread_sym_ver = ver_2_4;
     } else {
@@ -814,11 +833,20 @@ int _real_waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options) {
   REAL_FUNC_PASSTHROUGH (waitid) (idtype, id, infop, options);
 }
 
+#ifdef __ANDROID__
+#define __WAIT_STATUS int*
+LIB_PRIVATE
+pid_t _real_wait4(pid_t pid, __WAIT_STATUS status, int options,
+                  struct rusage *rusage) {
+  REAL_FUNC_PASSTHROUGH_TYPED (pid_t, __wait4) (pid, status, options, rusage);
+}
+#else
 LIB_PRIVATE
 pid_t _real_wait4(pid_t pid, __WAIT_STATUS status, int options,
                   struct rusage *rusage) {
   REAL_FUNC_PASSTHROUGH_TYPED (pid_t, wait4) (pid, status, options, rusage);
 }
+#endif /* __ANDROID__ */
 
 LIB_PRIVATE
 int _real_open64(const char *pathname, int flags, ...) {
