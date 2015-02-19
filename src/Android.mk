@@ -60,6 +60,29 @@ include $(BUILD_STATIC_LIBRARY)
 
 
 #
+# Build libnohijack.a
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := \
+	-DDMTCP_ANDROID -DHAVE_CONFIG_H -DDMTCP_STL_ANDROID
+
+LOCAL_C_INCLUDES:= \
+	$(LOCAL_PATH) \
+	$(dmtcpincludedir)
+
+LOCAL_SRC_FILES := dmtcpnohijackstubs.cpp
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := libnohijack
+
+include external/stlport/libstlport.mk
+
+include $(BUILD_STATIC_LIBRARY)
+
+############################################
+#
 # Build libdmtcp.so
 #
 
