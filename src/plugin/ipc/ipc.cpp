@@ -45,7 +45,9 @@ void dmtcp_event_hook(DmtcpEvent_t event, DmtcpEventData_t *data)
   dmtcp_FileConnList_EventHook(event, data);
   dmtcp_SocketConnList_EventHook(event, data);
   dmtcp_EventConnList_EventHook(event, data);
+#ifndef __ANDROID__
   dmtcp_SysVIPC_EventHook(event, data);
+#endif
   dmtcp_Timer_EventHook(event, data);
 
   DMTCP_NEXT_EVENT_HOOK(event, data);
@@ -136,6 +138,7 @@ extern "C" int dup2(int oldfd, int newfd)
   return newfd;
 }
 
+#ifndef __ANDROID__
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)) && __GLIBC_PREREQ(2,9)
 // dup3 appeared in Linux 2.6.27
 extern "C" int dup3(int oldfd, int newfd, int flags)
@@ -148,5 +151,6 @@ extern "C" int dup3(int oldfd, int newfd, int flags)
   DMTCP_PLUGIN_ENABLE_CKPT();
   return newfd;
 }
+#endif
 #endif
 

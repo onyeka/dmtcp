@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <time.h>
 #include "dmtcp.h"
+extern "C" int clock_getcpuclockid(pid_t pid, clockid_t *clock_id);
 
 #define _real_timer_create NEXT_FNC(timer_create)
 #define _real_timer_delete NEXT_FNC(timer_delete)

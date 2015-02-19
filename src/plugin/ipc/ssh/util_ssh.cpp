@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <sys/errno.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +12,9 @@
 
 #define MAX_BUFFER_SIZE (64*1024)
 
+#ifdef DMTCP_ANDROID
+#define signal bsd_signal
+#endif
 struct Buffer {
   char *buf;
   int  off;

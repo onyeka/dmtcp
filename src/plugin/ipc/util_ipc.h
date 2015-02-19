@@ -3,6 +3,10 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
+#ifdef __ANDROID__
+/* Including string.h for undefined function memset in Android*/
+#include<string.h>
+#endif
 #include "ipc.h"
 #include "dmtcp.h"
 

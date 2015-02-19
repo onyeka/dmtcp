@@ -31,7 +31,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#ifndef __ANDROID__
 #include <mqueue.h>
+#endif
 #include <stdint.h>
 #include <signal.h>
 #include "jfilesystem.h"
@@ -217,6 +219,7 @@ namespace dmtcp
       int32_t       ckptfd;
   };
 
+#ifndef __ANDROID__
   class PosixMQConnection: public Connection
   {
     public:
@@ -256,6 +259,7 @@ namespace dmtcp
       dmtcp::vector<jalib::JBuffer> _msgInQueue;
       dmtcp::vector<uint32_t> _msgInQueuePrio;
   };
+#endif
 
 }
 

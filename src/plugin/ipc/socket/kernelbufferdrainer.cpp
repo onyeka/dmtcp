@@ -36,7 +36,12 @@ void scaleSendBuffers(int fd, double factor)
 {
   int size;
   unsigned len = sizeof(size);
+
+#ifndef __ANDROID__
   JASSERT(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&size, &len) == 0);
+#else
+  JASSERT(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&size, (socklen_t*)&len) == 0);
+#endif
 
   // getsockopt returns doubled size. So, if we pass the same value to
   // setsockopt, it would double the buffer size.

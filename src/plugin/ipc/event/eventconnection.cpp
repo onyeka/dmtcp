@@ -21,6 +21,9 @@
 
 #include <sys/ioctl.h>
 #include <sys/select.h>
+#ifdef DMTCP_ANDROID
+# include <linux/socket.h>
+#endif
 #include <sys/un.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -131,10 +134,13 @@ void dmtcp::EventFdConnection::drain()
   size = read(evtfd, &u, sizeof(uint64_t));
   if (-1 != size) {
     JTRACE("Read value u: ") (evtfd) (u);
+
+#ifndef __ANDROID__
+    /* EFD_SEMAPHORE not present in bionic libc. */
     // EFD_SEMAPHORE flag not specified,
     // the counter value would have been reset to 0 upon read
     // Save the value, so that it can be restored in post-checkpoint
-    if (!(_flags & EFD_SEMAPHORE)) {
+   if (!(_flags & EFD_SEMAPHORE)) {
       _initval = u;
     } else {
       // EFD_SEMAPHORE specified, so can't read the current counter value
@@ -143,6 +149,9 @@ void dmtcp::EventFdConnection::drain()
         counter++;
       _initval = counter;
     }
+#else
+    _initval = u;
+#endif
   } else {
     JTRACE("Nothing to be read from eventfd.")
       (evtfd) (errno) (strerror(errno));

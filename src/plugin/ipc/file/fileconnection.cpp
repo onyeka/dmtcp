@@ -1133,6 +1133,7 @@ void dmtcp::StdioConnection::postRestart()
  * POSIX Message Queue Connection
  *****************************************************************************/
 
+#ifndef __ANDROID__
 void dmtcp::PosixMQConnection::on_mq_close()
 {
 }
@@ -1211,3 +1212,4 @@ void dmtcp::PosixMQConnection::serializeSubClass(jalib::JBinarySerializer& o)
   JSERIALIZE_ASSERT_POINT("dmtcp::PosixMQConnection");
   o & _name & _oflag & _mode & _attr;
 }
+#endif

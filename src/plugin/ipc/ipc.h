@@ -48,8 +48,10 @@
 #define _real_closedir NEXT_FNC(closedir)
 #define _real_dup NEXT_FNC(dup)
 #define _real_dup2 NEXT_FNC(dup2)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)) && __GLIBC_PREREQ(2,9)
-#define _real_dup3 NEXT_FNC(dup3)
+#ifndef __ANDROID__
+# if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27)) && __GLIBC_PREREQ(2,9)
+# define _real_dup3 NEXT_FNC(dup3)
+# endif
 #endif
 
 #define _real_fcntl NEXT_FNC(fcntl)

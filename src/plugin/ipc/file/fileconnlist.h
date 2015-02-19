@@ -29,7 +29,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <mqueue.h>
+#ifndef __ANDROID__
+# include <mqueue.h>
+#else
+# include <linux/mqueue.h>
+#endif
 #include <stdint.h>
 #include <signal.h>
 #include "jfilesystem.h"

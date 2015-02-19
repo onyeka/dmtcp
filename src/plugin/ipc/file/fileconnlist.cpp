@@ -27,7 +27,9 @@
 #include <sys/syscall.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#ifndef __ANDROID__
 #include <mqueue.h>
+#endif
 #include <stdint.h>
 #include <signal.h>
 #include "util.h"
@@ -38,6 +40,9 @@
 #include "fileconnection.h"
 #include "fileconnlist.h"
 #include "filewrappers.h"
+#ifdef __ANDROID__
+# include <fcntl.h>
+#endif
 
 using namespace dmtcp;
 
@@ -232,6 +237,7 @@ void dmtcp::FileConnList::remapShmMaps()
 //examine /proc/self/fd for unknown connections
 void dmtcp::FileConnList::scanForPreExisting()
 {
+#ifndef __ANDROID__
   // FIXME: Detect stdin/out/err fds to detect duplicates.
   dmtcp::vector<int> fds = jalib::Filesystem::ListOpenFds();
   dmtcp::string ctty = jalib::Filesystem::GetControllingTerm();
@@ -292,6 +298,7 @@ void dmtcp::FileConnList::scanForPreExisting()
       processFileConnection(fd, device.c_str(), -1, -1);
     }
   }
+#endif
 }
 
 Connection *dmtcp::FileConnList::findDuplication(int fd, const char *path)

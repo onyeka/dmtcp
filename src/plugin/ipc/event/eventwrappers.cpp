@@ -33,6 +33,16 @@
 #include "eventconnlist.h"
 #include "jassert.h"
 
+#ifdef __ANDROID__
+/* Redefine these constants (defined earlier in dmtcp.h) here */
+# undef POLL_TIMEOUT_TYPE
+# undef EVENTFD_VAL_TYPE
+/* Redefining POLL_TIMEOUT_TYPE to int from long int as
+poll.h has it of type int */
+# define POLL_TIMEOUT_TYPE int
+# define EVENTFD_VAL_TYPE  unsigned int
+#endif
+
 using namespace dmtcp;
 /* 'man 7 signal' says the following are not restarted after ckpt signal
  * even though the SA_RESTART option was used.  If we wrap these, we must
