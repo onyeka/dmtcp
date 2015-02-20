@@ -71,7 +71,12 @@
 //// DEFINE REAL VERSIONS OF NEEDED FUNCTIONS (based on syscallsreal.cpp)
 //// (Define only functions needed for dmtcp_launch, dmtcp_restart, etc.
 
+#ifndef __ANDROID__
 static pthread_mutex_t theMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#else
+/* For bionic: */
+static pthread_mutex_t theMutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+#endif
 
 #define REAL_FUNC_PASSTHROUGH(name) return name
 
@@ -375,6 +380,7 @@ SYSCALL_ARG_RET_TYPE _real_syscall(SYSCALL_ARG_RET_TYPE sys_num, ...) {
                                                                arg[5], arg[6]);
 }
 
+#ifndef __ANDROID__
 LIB_PRIVATE pid_t gettid() {
   return syscall(SYS_gettid);
 }
@@ -384,6 +390,7 @@ LIB_PRIVATE int tkill(int tid, int sig) {
 LIB_PRIVATE int tgkill(int tgid, int tid, int sig) {
   return syscall(SYS_tgkill, tgid, tid, sig);
 }
+#endif /* __ANDROID__ */
 
 // gettid / tkill / tgkill are not defined in libc.
 pid_t _real_gettid(void) {

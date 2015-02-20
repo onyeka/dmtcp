@@ -122,7 +122,7 @@ int dmtcp::Util::expandPathname(const char *inpath, char * const outpath,
     }
     while (*pathVar != '\0') {
       char *nextPtr;
-#ifndef DMTCP_ANDROID
+#ifndef __ANDROID__
       nextPtr = strchrnul(pathVar, ':');
 #else
       nextPtr = strchr(pathVar, ':');

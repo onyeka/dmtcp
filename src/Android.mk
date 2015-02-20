@@ -66,13 +66,13 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_CFLAGS := \
-	-DDMTCP_ANDROID -DHAVE_CONFIG_H -DDMTCP_STL_ANDROID
+	-DHAVE_CONFIG_H
 
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH) \
 	$(dmtcpincludedir)
 
-LOCAL_SRC_FILES := dmtcpnohijackstubs.cpp
+LOCAL_SRC_FILES := nosyscallsreal.c dmtcpnohijackstubs.cpp
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libnohijack
@@ -119,3 +119,27 @@ LOCAL_MODULE := libdmtcp
 include external/stlport/libstlport.mk
 
 include $(BUILD_SHARED_LIBRARY)
+
+#
+# Build dmtcp_restart
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := \
+	-DHAVE_CONFIG_H
+
+LOCAL_C_INCLUDES:= \
+	$(LOCAL_PATH)/../include \
+
+LOCAL_SRC_FILES := dmtcp_restart.cpp util_exec.cpp ckptserializer.cpp
+
+LOCAL_STATIC_LIBRARIES := libdmtcpinternal libjalib libnohijack
+LOCAL_SHARED_LIBRARIES := libdl
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := dmtcp_restart
+
+include external/stlport/libstlport.mk
+
+include $(BUILD_EXECUTABLE)

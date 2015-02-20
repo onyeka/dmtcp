@@ -21,7 +21,12 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
+#ifdef __ANDROID__
+# include <fcntl.h>
+# include <ctype.h>
+#else
 #include <sys/fcntl.h>
+#endif
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <limits.h>
