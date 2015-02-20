@@ -143,3 +143,31 @@ LOCAL_MODULE := dmtcp_restart
 include external/stlport/libstlport.mk
 
 include $(BUILD_EXECUTABLE)
+
+##############################################
+
+######################################
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS += -Wall -g  -DHAVE_CONFIG_H
+
+#LOCAL_LDLIBS := -L$(LOCAL_PATH)/lib -llog -g
+
+#LOCAL_C_INCLUDES := bionic
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../include 
+
+LOCAL_SRC_FILES:= dmtcp_launch.cpp
+
+LOCAL_MODULE := dmtcp_launch
+
+LOCAL_STATIC_LIBRARIES := libdmtcpinternal libjalib libnohijack 
+                          
+LOCAL_SHARED_LIBRARIES := libdl
+
+include external/stlport/libstlport.mk
+
+include $(BUILD_EXECUTABLE)
+
+#######################################
