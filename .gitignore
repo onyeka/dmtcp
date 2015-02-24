@@ -20,7 +20,6 @@ autom4te.cache
 
 bin/
 lib/
-include/config.h
 include/stamp-h1
 dmtcp/src/dmtcp_checkpoint
 dmtcp/src/dmtcp_launch
