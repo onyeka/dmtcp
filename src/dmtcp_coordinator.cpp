@@ -1522,7 +1522,10 @@ void dmtcp::DmtcpCoordinator::writeRestartScript()
     JTRACE("linking \"dmtcp_restart_script.sh\" filename to uniqueFilename")
       (filename) (dirname) (uniqueFilename);
     // FIXME:  Handle error case of symlink()
+#ifndef DMTCP_ANDROID
+    /* TODO: Implement this for Android. */
     JWARNING(symlinkat(uniqueFilename.c_str(), dirfd, filename.c_str()) == 0);
+#endif
     JASSERT(close(dirfd) == 0);
   }
   _restartFilenames.clear();
@@ -1541,6 +1544,10 @@ static void setupSIGINTHandler()
   action.sa_flags = 0;
   sigaction ( SIGINT, &action, NULL );
 }
+
+#ifdef __ANDROID__
+# define HOST_NAME_MAX 255
+#endif
 
 static void calcLocalAddr()
 {

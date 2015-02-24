@@ -143,3 +143,35 @@ LOCAL_MODULE := dmtcp_restart
 include external/stlport/libstlport.mk
 
 include $(BUILD_EXECUTABLE)
+
+#
+# Build dmtcp_coordinator
+#
+
+include $(CLEAR_VARS)
+
+#LOCAL_LDFLAGS := \
+        -Xlinker -znow
+LOCAL_CFLAGS := \
+        -DHAVE_CONFIG_H #-g \
+
+
+LOCAL_C_INCLUDES:= \
+        $(LOCAL_PATH)          \
+        external/dmtcp/jalib   \
+        external/dmtcp/include
+
+LOCAL_SRC_FILES := \
+        dmtcp_coordinator.cpp \
+        lookup_service.cpp \
+
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_STATIC_LIBRARIES := libdmtcpinternal libjalib libnohijack
+LOCAL_SHARED_LIBRARIES := libdl
+LOCAL_MODULE := dmtcp_coordinator
+
+include external/stlport/libstlport.mk
+
+include $(BUILD_EXECUTABLE)
+
