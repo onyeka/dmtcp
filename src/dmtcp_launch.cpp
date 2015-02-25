@@ -30,6 +30,11 @@
 #include "shareddata.h"
 #include "util.h"
 
+#ifdef __ANDROID__
+ # include <ctype.h>
+ # include <fcntl.h>
+#endif
+
 #define BINARY_NAME "dmtcp_launch"
 
 using namespace dmtcp;
@@ -421,7 +426,8 @@ int main ( int argc, char** argv )
 
   //set up CHECKPOINT_DIR
   if(getenv(ENV_VAR_CHECKPOINT_DIR) == NULL){
-    const char* ckptDir = get_current_dir_name();
+    //const char* ckptDir = get_current_dir_name();
+      const char* ckptDir = getcwd(NULL, 0);
     if(ckptDir != NULL ){
       //copy to private buffer
       static dmtcp::string _buf = ckptDir;

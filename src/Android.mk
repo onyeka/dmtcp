@@ -144,16 +144,15 @@ include external/stlport/libstlport.mk
 
 include $(BUILD_EXECUTABLE)
 
+##############################################
 #
 # Build dmtcp_coordinator
 #
 
 include $(CLEAR_VARS)
 
-#LOCAL_LDFLAGS := \
-        -Xlinker -znow
 LOCAL_CFLAGS := \
-        -DHAVE_CONFIG_H #-g \
+        -DHAVE_CONFIG_H 
 
 
 LOCAL_C_INCLUDES:= \
@@ -175,3 +174,28 @@ include external/stlport/libstlport.mk
 
 include $(BUILD_EXECUTABLE)
 
+##############################################
+
+#
+# Build dmtcp_launch
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS += -Wall -g  -DHAVE_CONFIG_H
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../include 
+
+LOCAL_SRC_FILES:= dmtcp_launch.cpp
+
+LOCAL_MODULE := dmtcp_launch
+
+LOCAL_STATIC_LIBRARIES := libdmtcpinternal libjalib libnohijack 
+                          
+LOCAL_SHARED_LIBRARIES := libdl
+
+include external/stlport/libstlport.mk
+
+include $(BUILD_EXECUTABLE)
+
+#######################################
