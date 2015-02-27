@@ -32,3 +32,24 @@ LOCAL_MODULE := libmtcp
 #include external/stlport/libstlport.mk
 
 include $(BUILD_STATIC_LIBRARY)
+
+
+#
+# Build mtcp_restart
+#
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := -g -fno-stack-protector
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH) \
+		     $(LOCAL_PATH)/.. \
+		     $(LOCAL_PATH)/../../include \
+
+
+LOCAL_SRC_FILES:= mtcp_restart.c mtcp_check_vdso.ic
+
+LOCAL_MODULE := mtcp_restart
+
+LOCAL_STATIC_LIBRARIES := libmtcp
+
+include $(BUILD_EXECUTABLE)

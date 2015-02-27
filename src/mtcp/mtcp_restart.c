@@ -1406,12 +1406,14 @@ void __stack_chk_fail(void)
   mtcp_abort();
 }
 
+#ifndef __ANDROID__
 void __stack_chk_fail_local(void)
 {
   int mtcp_sys_errno;
   MTCP_PRINTF("ERROR: Stack Overflow detected.\n");
   mtcp_abort();
 }
+#endif
 
 void __stack_chk_guard(void)
 {
