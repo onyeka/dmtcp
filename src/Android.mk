@@ -81,6 +81,57 @@ include external/stlport/libstlport.mk
 
 include $(BUILD_STATIC_LIBRARY)
 
+
+############################################
+#
+# Build libmtcp.a
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := \
+	-DHAVE_CONFIG_H -fno-stack-protector
+
+LOCAL_C_INCLUDES:= \
+	$(LOCAL_PATH) \
+	$(dmtcpincludedir)
+
+
+LOCAL_SRC_FILES := \
+	mtcp/restore_libc.c
+ifeq ($(TARGET_ARCH), arm)
+	LOCAL_SRC_FILES += mtcp/syscall-arm.S
+endif
+
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := libmtcp
+
+#include external/stlport/libstlport.mk
+
+include $(BUILD_STATIC_LIBRARY)
+
+
+############################################
+#
+# Build mtcp_restart
+#
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS := -g -fno-stack-protector
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH) \
+		     $(top_srcdir) \
+		     $(dmtcpincludedir) \
+
+LOCAL_SRC_FILES:= mtcp/mtcp_restart.c mtcp/mtcp_check_vdso.ic
+
+LOCAL_MODULE := mtcp_restart
+
+LOCAL_STATIC_LIBRARIES := libmtcp
+
+include $(BUILD_EXECUTABLE)
+
 ############################################
 #
 # Build libdmtcp.so
@@ -199,3 +250,4 @@ include external/stlport/libstlport.mk
 include $(BUILD_EXECUTABLE)
 
 #######################################
+include $(call all-makefiles-under,$(LOCAL_PATH)/plugin)

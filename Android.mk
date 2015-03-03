@@ -25,3 +25,6 @@ LOCAL_MODULE := libjalib
 include external/stlport/libstlport.mk
 
 include $(BUILD_STATIC_LIBRARY)
+
+######################################
+include $(call all-makefiles-under,$(LOCAL_PATH))
